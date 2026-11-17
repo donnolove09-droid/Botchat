@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WormGPT Interface</title>
+    <style>
+        body { font-family: 'Courier New', monospace; background-color: #121212; color: #00ff00; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { width: 80%; max-width: 600px; background: #1e1e1e; padding: 20px; border: 1px solid #00ff00; box-shadow: 0 0 10px #00ff00; }
+        h2 { text-align: center; margin-top: 0; }
+        #chat-box { height: 300px; overflow-y: auto; border: 1px solid #333; padding: 10px; margin-bottom: 10px; background: #000; color: #00ff00; font-family: monospace; white-space: pre-wrap; }
+        .user-msg { color: #ffff00; margin-bottom: 5px; }
+        .bot-msg { color: #00ff00; margin-bottom: 15px; }
+        .input-group { display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; background: #333; border: 1px solid #555; color: white; font-family: monospace; }
+        button { padding: 10px 20px; background: #00ff00; color: black; border: none; font-weight: bold; cursor: pointer; }
+        button:hover { background: #00cc00; }
+        button:disabled { background: #555; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>WormGPT Uncensored</h2>
+        <div id="chat-box"></div>
+        <div class="input-group">
+            <input type="text" id="user-input" placeholder="Nhập lệnh hoặc câu hỏi..." onkeypress="handleEnter(event)">
+            <button id="send-btn" onclick="sendMessage()">Gửi</button>
+        </div>
+    </div>
+
+    <script>
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        async function sendMessage() {
+            const inputField = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+            const chatBox = document.getElementById('chat-box');
+            const message = inputField.value;
+
+            if (!message) return;
+
+            // Hiển thị tin nhắn người dùng
+            chatBox.innerHTML += `<div class="user-msg">> ${message}</div>`;
+            inputField.value = '';
+            sendBtn.disabled = true;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                
+                // Hiển thị tin nhắn bot
+                chatBox.innerHTML += `<div class="bot-msg">WormGPT: ${data.response}</div>`;
+            } catch (error) {
+                chatBox.innerHTML += `<div class="bot-msg" style="color:red">Lỗi: ${error.message}</div>`;
+            }
+
+            sendBtn.disabled = false;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
